@@ -1,0 +1,39 @@
+services:
+  notification-service:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    platform: linux/amd64
+    container_name: notification-service
+    ports:
+      - "8083:8083"
+    expose:
+      - "8083"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+      - SPRING_MAIL_HOST=smtp.gmail.com
+      - SPRING_MAIL_PORT=587
+      - SPRING_MAIL_USERNAME=abdullayevala91@gmail.com
+      - SPRING_MAIL_PASSWORD=${MAIL_PASSWORD}
+      - SPRING_MAIL_PROPERTIES_MAIL_SMTP_AUTH=true
+      - SPRING_MAIL_PROPERTIES_MAIL_SMTP_STARTTLS_ENABLE=true
+      - SPRING_SERVLET_MULTIPART_MAX_FILE_SIZE=10MB
+      - SPRING_SERVLET_MULTIPART_MAX_REQUEST_SIZE=10MB
+      - GRPC_CLIENT_AUTH_SERVICE_ADDRESS=static://auth-service:9090
+      - GRPC_CLIENT_AUTH_SERVICE_NEGOTIATION_TYPE=plaintext
+    develop:
+      watch:
+        - action: rebuild
+          path: ./src/main/java
+          ignore:
+            - ./src/main/java/some/package/to/ignore/**
+            - ./src/test/**
+            - ./build/**
+            - ./.gradle/**
+        - action: sync+restart
+          path: ./src/main/resources
+          target: /app/src/main/resources
+        - action: sync
+          path: ./build/libs/*.jar
+          target: /app/app.jar
+
